@@ -1,1 +1,1 @@
-Projeto para uso de calculadora de notas, média, aprovação e final do grupo Ser.
+Projeto para uso de calculadora do Ser solidário.
