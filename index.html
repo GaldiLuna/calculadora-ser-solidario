@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #e0f7fa; /* Fundo azul claro */
+            background-color: #e0f7fa;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -39,7 +39,7 @@
         .form-group input {
             width: 100%;
             padding: 10px;
-            padding-left: 35px; /* Ajuste para espaço do símbolo de real */
+            padding-left: 35px;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
@@ -60,7 +60,7 @@
             padding: 10px;
         }
         th {
-            background-color: #fdd835; /* Fundo amarelo */
+            background-color: #fdd835;
             color: #333;
         }
         td {
@@ -69,14 +69,19 @@
     </style>
     <script>
         function calcularValores() {
-            const valorMensalidade = parseFloat(document.getElementById('valorMensalidade').value) || 0;
+            const valorMensalidadeInput = document.getElementById('valorMensalidade');
+            const valorMensalidade = parseFloat(valorMensalidadeInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const duracaoCurso = parseInt(document.getElementById('duracaoCurso').value) || 0;
             const desconto = parseFloat(document.getElementById('desconto').value) / 100 || 0;
 
-            const mesesDiluição = duracaoCurso - 1;
+            if (valorMensalidade === 0 || duracaoCurso === 0) {
+                return;
+            }
+
+            const mesesDiluição = duracaoCurso - 2;
             const valorDescontoCampanha = valorMensalidade * desconto;
             const valorMensalidadeComDesconto = valorMensalidade - valorDescontoCampanha;
-            const saldoSerSolidario = valorMensalidadeComDesconto - 129;
+            const saldoSerSolidario = (valorMensalidadeComDesconto * 2) - 258;
             const valorParcelaSerSolidario = saldoSerSolidario / mesesDiluição;
 
             document.getElementById('mesesDiluição').value = mesesDiluição;
@@ -98,11 +103,11 @@
             `;
 
             for (let i = 1; i <= 6; i++) {
-                const valorIntegral = valorMensalidade.toFixed(2);
-                const valorDiluído = saldoSerSolidario.toFixed(2);
-                const valorDia = (i === 1) ? '0.00' : valorDescontoCampanha.toFixed(2);
-                const parcelaDiluição = (i === 1) ? '0.00' : valorParcelaSerSolidario.toFixed(2);
-                const valorCobrado = (i === 1) ? '129.00' : (valorMensalidadeComDesconto + parseFloat(parcelaDiluição)).toFixed(2);
+                const valorIntegral = valorMensalidade.toFixed(2).replace('.', ',');
+                const valorDiluído = saldoSerSolidario.toFixed(2).replace('.', ',');
+                const valorDia = (i === 1 || i === 2) ? '0,00' : valorDescontoCampanha.toFixed(2).replace('.', ',');
+                const parcelaDiluição = (i === 1 || i === 2) ? '0,00' : valorParcelaSerSolidario.toFixed(2).replace('.', ',');
+                const valorCobrado = (i === 1 || i === 2) ? '129,00' : (valorMensalidadeComDesconto + parseFloat(parcelaDiluição.replace(',', '.'))).toFixed(2).replace('.', ',');
 
                 tabela.innerHTML += `
                     <tr>
@@ -116,6 +121,18 @@
                 `;
             }
         }
+
+        function formatarMoeda(event) {
+            let input = event.target;
+            let value = input.value;
+
+            value = value.replace(/\D/g, '');
+            value = (value / 100).toFixed(2) + '';
+            value = value.replace(".", ",");
+            value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
+            input.value = value;
+        }
     </script>
 </head>
 <body>
@@ -124,15 +141,10 @@
         <div class="form-group">
             <label for="valorMensalidade">Valor da mensalidade:</label>
             <span class="currency-symbol">R$</span>
-            <input type="number" id="valorMensalidade" oninput="calcularValores()" step="0.01">
+            <input type="text" id="valorMensalidade" oninput="formatarMoeda(event); calcularValores()">
         </div>
         <div class="form-group">
-            <label for="valorOfertaSerSolidario">Valor da Oferta do Ser Solidário:</label>
-            <span class="currency-symbol">R$</span>
-            <input type="number" id="valorOfertaSerSolidario" value="129.00" readonly>
-        </div>
-        <div class="form-group">
-            <label for="duracaoCurso">Duração do curso:</label>
+            <label for="duracaoCurso">Duração do curso (meses):</label>
             <input type="number" id="duracaoCurso" oninput="calcularValores()">
         </div>
         <div class="form-group">
